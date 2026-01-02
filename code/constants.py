@@ -1,0 +1,3 @@
+LIVEKIT_URL="wss://test-eval-lnos2vsf.livekit.cloud"
+LIVEKIT_API_KEY="APIbCSXJh6FwjcD"
+LIVEKIT_API_SECRET="mq8LE5zkOVn3nR2bSAgGlpCA7ZRm8QkQW7PzNBiYLlB"
