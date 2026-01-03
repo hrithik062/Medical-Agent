@@ -6,9 +6,10 @@ from livekit.agents import Agent
 
 
 class AskAvailability(AgentTask[bool]):
-    def __init__(self, chat_ctx=None, agent_instructions=None, agent=None):
+    def __init__(self,agent=None):
+        self.agent = agent
         super().__init__(
-            instructions=agent_instructions+"""
+            instructions=self.agent.agent_instructions+"""
             Pitch Introduction for who you are and also tell why you called the user using the below information - 
             
             Patient had Ankle surgery after a fall from a horse while playing Polo and is enrolled into a
@@ -16,9 +17,9 @@ class AskAvailability(AgentTask[bool]):
             
             Get confirmation for user availability before moving further
             """,
-            chat_ctx=chat_ctx,
+            chat_ctx=self.agent.chat_ctx,
         )
-        self.agent = agent
+
 
     async def stt_node(
         self, audio: AsyncIterable[rtc.AudioFrame], model_settings: ModelSettings
@@ -48,18 +49,19 @@ class AskAvailability(AgentTask[bool]):
 
     async def on_enter(self) -> None:
         print("Reached Availability Task")
-        await self.session.generate_reply(instructions="Introduce yourself about why you called the patient, Mentioning your name")
+        await self.session.generate_reply(instructions="""Briefly introduce yourself and politely ask if they are available to talk now. 
+        Keep it to one short sentence within 7 words.""")
 
 
 class AskFeeling(AgentTask[str]):
-    def __init__(self, chat_ctx=None, agent_instructions=None,agent=None):
+    def __init__(self, agent=None):
+        self.agent = agent
         super().__init__(
-            instructions=agent_instructions+"""
+            instructions=self.agent.agent_instructions + """
                     Ask about how the patient is feeling after surgery
                     """,
-            chat_ctx=chat_ctx,
+            chat_ctx=self.agent.chat_ctx,
         )
-        self.agent = agent
 
 
     async def llm_node(self,
@@ -87,9 +89,10 @@ class AskFeeling(AgentTask[str]):
         await self.session.generate_reply(instructions="Ask about how the patient is feeling after surgery")
 
 class AssessPainScore(AgentTask[int]):
-    def __init__(self, chat_ctx=None, agent_instructions=None,agent=None):
+    def __init__(self, agent=None):
+        self.agent = agent
         super().__init__(
-            instructions=agent_instructions+"""
+            instructions=self.agent.agent_instructions + """
             You must ask the patient to rate their pain on a scale from 1 to 10, where:
             1 = very mild pain
             10 = the worst pain imaginable.
@@ -112,9 +115,9 @@ class AssessPainScore(AgentTask[int]):
             
             Stay supportive, respectful, and calm at all times. Once user shared the pain score move to next task
             """,
-            chat_ctx=chat_ctx
+            chat_ctx=self.agent.chat_ctx
         )
-        self.agent = agent
+
 
     async def stt_node(
         self, audio: AsyncIterable[rtc.AudioFrame], model_settings: ModelSettings
@@ -159,9 +162,10 @@ class ExerciseSessionResults:
 
 
 class ExerciseGuidanceTask(AgentTask[ExerciseSessionResults]):
-    def __init__(self, chat_ctx=None, agent_instructions=None, agent=None):
+    def __init__(self, agent=None):
+        self.agent = agent
         super().__init__(
-            instructions=agent_instructions+(
+            instructions=self.agent.agent_instructions +(
                 "Guide the patient through three ankle-recovery exercises, "
                 "one at a time, using a calm and supportive tone. "
                 "After explaining each exercise, ask: "
@@ -169,9 +173,8 @@ class ExerciseGuidanceTask(AgentTask[ExerciseSessionResults]):
                 "[exercise name] now? I can pause the call for up to one minute.' "
                 "Wait for their response before moving to the next exercise."
             ),
-            chat_ctx=chat_ctx
+            chat_ctx=self.agent.chat_ctx
         )
-        self.agent = agent
 
         self._results = {}
 
@@ -233,9 +236,6 @@ class ExerciseGuidanceTask(AgentTask[ExerciseSessionResults]):
         )
         self._continue_flow()
 
-    #
-    # ---------- RECORDING FUNCTIONS ----------
-    #
 
     @function_tool
     async def record_exercise_response(
@@ -256,10 +256,6 @@ class ExerciseGuidanceTask(AgentTask[ExerciseSessionResults]):
         )
 
         self._check_completion()
-
-    #
-    # ---------- FLOW CONTROL ----------
-    #
 
     def _continue_flow(self):
         # Determine which exercise is next

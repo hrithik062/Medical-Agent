@@ -76,12 +76,12 @@ class EmotionNode:
                 label, conf = self._infer(window)
                 if self.node_type == "stt":
                     emotion = self.ctx.proc.userdata.get("user_emotion",[])
-                    if conf>0.7:
+                    if conf>0.75:
                         emotion.append(label)
                     self.ctx.proc.userdata["user_emotion"]= emotion
                 else:
                     emotion = self.ctx.proc.userdata.get("agent_emotion", [])
-                    if conf > 0.70:
+                    if conf > 0.75:
                         emotion.append(label)
                     self.ctx.proc.userdata["agent_emotion"] = emotion
                 self.smooth.append(label)

@@ -47,8 +47,8 @@ class VoiceAgent(Agent):
     ) -> AsyncIterable[llm.ChatChunk]:
 
         language = self.ctx.proc.userdata.get("language","en")
+        chat_ctx = chat_ctx.copy()
         if language != "en":
-            chat_ctx = chat_ctx.copy()
             chat_ctx.add_message(
                 role="assistant",
                 content=f"""
@@ -57,9 +57,7 @@ class VoiceAgent(Agent):
                 Respectfully mention to user that you only support english language extensively.
                 """
             )
-            await self.update_chat_ctx(chat_ctx)
 
-        chat_ctx = chat_ctx.copy()
         user_emotion = self.ctx.proc.userdata.get('user_emotion', ['NEUTRAL'])
         agent_emotion = self.ctx.proc.userdata.get('agent_emotion', ['NEUTRAL'])
         chat_ctx.add_message(
@@ -94,11 +92,11 @@ class VoiceAgent(Agent):
 
 
     async def on_enter(self) -> None:
-        confirmation = await AskAvailability(self.chat_ctx,self.agent_instructions,self)
+        confirmation = await AskAvailability(self)
         if confirmation:
-            feeling = await AskFeeling(self.chat_ctx,self.agent_instructions,self)
-            pain_score = await AssessPainScore(self.chat_ctx,self.agent_instructions,self)
-            exercise_guidance = await ExerciseGuidanceTask(self.chat_ctx,self.agent_instructions,self)
+            feeling = await AskFeeling(self)
+            pain_score = await AssessPainScore(self)
+            exercise_guidance = await ExerciseGuidanceTask(self)
 
             ## Call Closure Logic
             await self.session.generate_reply(instructions="Provide a closing statement in english and inform them you are going to close this call",

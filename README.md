@@ -120,7 +120,7 @@ chmod +x build.sh
 ### 3️⃣ Run the agent
 
 ```bash
-./build.sh
+sh build.sh
 ```
 
 The script will:
